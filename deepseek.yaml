@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepseek-server
+  annotations:
+    description: "Deployment for DeepSeek server"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deepseek-server
+  template:
+    metadata:
+      labels:
+        app: deepseek-server
+    spec:
+      initContainers:
+      - name: download-model
+        image: python:3
+        command: ["/bin/bash"]
+        args:
+          - "-c"
+          - |
+            apt-get update && apt-get install -y git-lfs
+            pip install huggingface_hub
+            huggingface-cli download deepseek-ai/DeepSeek-R1 --local-dir /local/model --cache-dir /local/cache
+        volumeMounts:
+        - name: local-storage
+          mountPath: /local
+      containers:
+      - name: vllm-server
+        image: docker.io/vllm/vllm-openai
+        env:
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: hf-token-secret
+              key: token
+        command: ["/bin/bash"]
+        args:
+          - "-c"
+          - >
+            python3 -u -m vllm.entrypoints.openai.api_server
+            --host 0.0.0.0
+            --port 8000
+            --model /local/model/deepseek-ai/DeepSeek-R1
+            --tensor-parallel-size 4
+            --load-format safetensors
+            --trust-remote-code
+            --max-model-len 8192
+            --gpu-memory-utilization 0.97
+            --enforce-eager
+        resources:
+          limits:
+            nvidia.com/gpu: "4"
+            memory: 10Gi
+            cpu: "4"
+        securityContext:
+          privileged: true
+        ports:
+        - containerPort: 8000
+        startupProbe:
+          periodSeconds: 10
+          failureThreshold: 720
+          httpGet:
+            path: /health
+            port: 8000
+        volumeMounts:
+        - name: local-storage
+          mountPath: /local
+      volumes:
+      - name: local-storage
+        hostPath:
+          path: /root/local
+          type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepseek-r1-server
+spec:
+  selector:
+    app: deepseek-server
+  type: ClusterIP
+  ports:
+    - name: port-8000
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hf-token-secret
+type: Opaque
+data:
+  token: "aGZfTUVzd1BVRlVZc2ZVTkRRRkVzTXF0UVBvbUx1bXZoVmdXQg=="
