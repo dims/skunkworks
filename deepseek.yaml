@@ -28,15 +28,11 @@ spec:
         - name: local-storage
           mountPath: /local
       containers:
-      - name: vllm-server
-        image: docker.io/vllm/vllm-openai
+      - name: sglang-server
+        image: lmsysorg/sglang:latest
         env:
-        - name: NCCL_DEBUG
-          value: INFO
         - name: HF_HUB_ENABLE_HF_TRANSFER
           value: "1"
-        - name: PYTORCH_CUDA_ALLOC_CONF
-          value: "expandable_segments:True"
         - name: HF_TOKEN
           valueFrom:
             secretKeyRef:
@@ -46,17 +42,17 @@ spec:
         args:
           - "-c"
           - >
-            python3 -u -m vllm.entrypoints.openai.api_server
+            python3 -m sglang.launch_server
+            --model /local/model
+            --tp 4
             --host 0.0.0.0
             --port 8000
-            --root-path /local/model/
-            --model deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
-            --tensor-parallel-size 4
             --dtype half
-            --load-format safetensors 
+            --load-format safetensors
             --trust-remote-code
-            --gpu-memory-utilization 0.97
-            --enforce-eager
+            --mem-fraction-static 0.7
+            --enable-dp-attention
+            --disable-cuda-graph
         resources:
           limits:
             nvidia.com/gpu: "4"
