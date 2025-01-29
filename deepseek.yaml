@@ -35,6 +35,8 @@ spec:
           value: INFO
         - name: HF_HUB_ENABLE_HF_TRANSFER
           value: "1"
+        - name: PYTORCH_CUDA_ALLOC_CONF
+          value: "expandable_segments:True"
         - name: HF_TOKEN
           valueFrom:
             secretKeyRef:
@@ -49,9 +51,12 @@ spec:
             --port 8000
             --root-path /local/model/
             --model deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
-            --trust-remote-code
+            --tensor-parallel-size 4
             --dtype half
-            --max-model-len 4096
+            --load-format safetensors 
+            --trust-remote-code
+            --gpu-memory-utilization 0.97
+            --enforce-eager
         resources:
           limits:
             nvidia.com/gpu: "4"
@@ -70,11 +75,16 @@ spec:
         volumeMounts:
         - name: local-storage
           mountPath: /local
+        - name: shm
+          mountPath: /dev/shm
       volumes:
       - name: local-storage
         hostPath:
           path: /root/local
           type: DirectoryOrCreate
+      - name: shm
+        emptyDir:
+          medium: Memory
 ---
 apiVersion: v1
 kind: Service
