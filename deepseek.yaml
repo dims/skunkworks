@@ -23,7 +23,7 @@ spec:
           - |
             apt-get update && apt-get install -y git-lfs
             pip install huggingface_hub
-            huggingface-cli download deepseek-ai/DeepSeek-R1 --local-dir /local/model --cache-dir /local/cache
+            huggingface-cli download deepseek-ai/DeepSeek-R1-Distill-Qwen-7B --local-dir /local/model --cache-dir /local/cache
         volumeMounts:
         - name: local-storage
           mountPath: /local
@@ -31,6 +31,10 @@ spec:
       - name: vllm-server
         image: docker.io/vllm/vllm-openai
         env:
+        - name: NCCL_DEBUG
+          value: INFO
+        - name: HF_HUB_ENABLE_HF_TRANSFER
+          value: "1"
         - name: HF_TOKEN
           valueFrom:
             secretKeyRef:
@@ -44,14 +48,10 @@ spec:
             --host 0.0.0.0
             --port 8000
             --root-path /local/model/
-            --model deepseek-ai/DeepSeek-R1
-            --tensor-parallel-size 4
-            --load-format safetensors
+            --model deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
             --trust-remote-code
-            --max-model-len 8192
-            --gpu-memory-utilization 0.97
-            --enforce-eager
-            --quantization fp8
+            --dtype half
+            --max-model-len 4096
         resources:
           limits:
             nvidia.com/gpu: "4"
