@@ -43,13 +43,15 @@ spec:
             python3 -u -m vllm.entrypoints.openai.api_server
             --host 0.0.0.0
             --port 8000
-            --model /local/model/deepseek-ai/DeepSeek-R1
+            --root-path /local/model/
+            --model deepseek-ai/DeepSeek-R1
             --tensor-parallel-size 4
             --load-format safetensors
             --trust-remote-code
             --max-model-len 8192
             --gpu-memory-utilization 0.97
             --enforce-eager
+            --quantization fp8
         resources:
           limits:
             nvidia.com/gpu: "4"
