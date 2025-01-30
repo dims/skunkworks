@@ -42,8 +42,7 @@ spec:
         args:
           - "-c"
           - >
-            vllm serve 
-            --model /local/model/deepseek-ai/DeepSeek-R1-Distill-Llama-8B
+            vllm serve deepseek-ai/DeepSeek-R1-Distill-Llama-8B
             --host 0.0.0.0
             --port 8000
             --trust-remote-code
