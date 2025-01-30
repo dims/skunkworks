@@ -23,13 +23,13 @@ spec:
           - |
             apt-get update && apt-get install -y git-lfs
             pip install huggingface_hub
-            huggingface-cli download deepseek-ai/DeepSeek-R1-Distill-Qwen-32B --local-dir /local/model/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B --cache-dir /local/cache
+            huggingface-cli download deepseek-ai/DeepSeek-R1-Distill-Llama-8B --local-dir /local/model/deepseek-ai/DeepSeek-R1-Distill-Llama-8B --cache-dir /local/cache
         volumeMounts:
         - name: local-storage
           mountPath: /local
       containers:
-      - name: sglang-server
-        image: lmsysorg/sglang:latest
+      - name: vllm-server
+        image: vllm/vllm-openai:latest
         env:
         - name: HF_HUB_ENABLE_HF_TRANSFER
           value: "1"
@@ -42,23 +42,20 @@ spec:
         args:
           - "-c"
           - >
-            pip3 install --upgrade pip &&
-            pip3 install sgl-kernel --force-reinstall --no-deps &&
-            pip3 install "sglang[all]" --find-links https://flashinfer.ai/whl/cu124/torch2.4/flashinfer/ &&
-            python3 -m sglang.launch_server
-            --model /local/model/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B
-            --tp 8
+            vllm serve 
+            --model /local/model/deepseek-ai/DeepSeek-R1-Distill-Llama-8B
             --host 0.0.0.0
             --port 8000
             --trust-remote-code
-            --mem-fraction-static 0.7
-            --enable-dp-attention
-            --disable-cuda-graph
         resources:
           limits:
-            nvidia.com/gpu: "8"
-            memory: 32Gi
-            cpu: "8"
+            cpu: "32"
+            memory: 100G
+            nvidia.com/gpu: "1"
+          requests:
+            cpu: "16"
+            memory: 30G
+            nvidia.com/gpu: "1"
         securityContext:
           privileged: true
         ports:
@@ -82,6 +79,7 @@ spec:
       - name: shm
         emptyDir:
           medium: Memory
+          sizeLimit: "2Gi"
 ---
 apiVersion: v1
 kind: Service
