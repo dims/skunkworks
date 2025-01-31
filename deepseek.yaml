@@ -28,7 +28,7 @@ spec:
               name: hf-token-secret
               key: token
         - name: MODEL_REPO
-          value: "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+          value: "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"
         command: ["/bin/bash"]
         args:
           - "-c"
