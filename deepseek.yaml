@@ -14,35 +14,26 @@ spec:
       labels:
         app: deepseek-server
     spec:
-      initContainers:
-      - name: download-model
-        image: python:3
-        command: ["/bin/bash"]
-        args:
-          - "-c"
-          - |
-            apt-get update && apt-get install -y git-lfs
-            pip install huggingface_hub
-            huggingface-cli download deepseek-ai/DeepSeek-R1-Distill-Llama-8B --local-dir /local/model/deepseek-ai/DeepSeek-R1-Distill-Llama-8B --cache-dir /local/cache
-        volumeMounts:
-        - name: local-storage
-          mountPath: /local
       containers:
       - name: vllm-server
         image: vllm/vllm-openai:latest
         env:
         - name: HF_HUB_ENABLE_HF_TRANSFER
           value: "1"
+        - name: HF_HOME
+          value: "/local/huggingface"
         - name: HF_TOKEN
           valueFrom:
             secretKeyRef:
               name: hf-token-secret
               key: token
+        - name: MODEL_REPO
+          value: "deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
         command: ["/bin/bash"]
         args:
           - "-c"
           - >
-            vllm serve deepseek-ai/DeepSeek-R1-Distill-Llama-8B
+            vllm serve ${MODEL_REPO}
             --host 0.0.0.0
             --port 8000
             --trust-remote-code
