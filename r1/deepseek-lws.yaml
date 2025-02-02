@@ -1,0 +1,140 @@
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: vllm
+spec:
+  replicas: 1
+  leaderWorkerTemplate:
+    size: 3
+    restartPolicy: RecreateGroupOnPodRestart
+    leaderTemplate:
+      metadata:
+        labels:
+          role: leader
+      spec:
+        containers:
+          - name: vllm-leader
+            image: vllm/vllm-openai:latest
+            env:
+              - name: HF_HUB_ENABLE_HF_TRANSFER
+                value: "1"
+              - name: HF_HOME
+                value: "/local/huggingface"
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-token-secret
+                    key: token
+              - name: MODEL_REPO
+                value: "deepseek-ai/DeepSeek-R1"
+            command: ["/bin/bash"]
+            args:
+              - "-c"
+              - >
+                wget https://raw.githubusercontent.com/kubernetes-sigs/lws/main/docs/examples/vllm/build/ray_init.sh -O /ray_init.sh; 
+                chmod +x /ray_init.sh;
+                /ray_init.sh leader --ray_cluster_size=$(LWS_GROUP_SIZE); 
+                vllm serve ${MODEL_REPO}
+                --host 0.0.0.0
+                --port 8000
+                --trust-remote-code
+                --tensor-parallel-size 8
+                --pipeline_parallel_size 2
+            resources:
+              limits:
+                nvidia.com/gpu: "8"
+                memory: 512Gi
+                ephemeral-storage: 800Gi
+              requests:
+                ephemeral-storage: 800Gi
+                cpu: 48
+            ports:
+              - containerPort: 8080
+            readinessProbe:
+              tcpSocket:
+                port: 8080
+              initialDelaySeconds: 15
+              periodSeconds: 10
+            volumeMounts:
+              - name: local-storage
+                mountPath: /local
+              - name: shm
+                mountPath: /dev/shm
+        volumes:
+        - name: local-storage
+          hostPath:
+            path: /root/local
+            type: DirectoryOrCreate
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: "15Gi"
+    workerTemplate:
+      spec:
+        containers:
+          - name: vllm-worker
+            image: vllm/vllm-openai:latest
+            env:
+              - name: HF_HUB_ENABLE_HF_TRANSFER
+                value: "1"
+              - name: HF_HOME
+                value: "/local/huggingface"
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-token-secret
+                    key: token
+              - name: MODEL_REPO
+                value: "deepseek-ai/DeepSeek-R1"
+            command: ["/bin/bash"]
+            args:
+              - "-c"
+              - >
+                wget https://raw.githubusercontent.com/kubernetes-sigs/lws/main/docs/examples/vllm/build/ray_init.sh -O /ray_init.sh; 
+                chmod +x /ray_init.sh;
+                 /ray_init.sh worker --ray_address=$(LWS_LEADER_ADDRESS)
+            resources:
+              limits:
+                nvidia.com/gpu: "8"
+                memory: 512Gi
+                ephemeral-storage: 800Gi
+              requests:
+                ephemeral-storage: 800Gi
+                cpu: 48
+            volumeMounts:
+              - name: local-storage
+                mountPath: /local
+              - mountPath: /dev/shm
+                name: dshm   
+        volumes:
+        - name: local-storage
+          hostPath:
+            path: /root/local
+            type: DirectoryOrCreate
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 15Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-leader
+spec:
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    leaderworkerset.sigs.k8s.io/name: vllm
+    role: leader
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hf-token-secret
+type: Opaque
+data:
+  token: "aGZfTUVzd1BVRlVZc2ZVTkRRRkVzTXF0UVBvbUx1bXZoVmdXQg=="
