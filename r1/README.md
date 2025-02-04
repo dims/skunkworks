@@ -2,7 +2,7 @@ Notes
 =====
 
 ```bash
-eksdemo create cluster testing-deep-seek-llama-r1 -v "1.32" --instance p4d.24xlarge --max 3 --nodes 3 --no-taints
+eksdemo create cluster testing-deep-seek-llama-r1 -v "1.32" --os AmazonLinux2023 --instance p4d.24xlarge --max 3 --nodes 3 --no-taints
 ```
 
 ```bash

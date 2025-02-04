@@ -20,11 +20,15 @@ spec:
                 value: "1"
               - name: HF_HOME
                 value: "/local/huggingface"
+              - name: HF_HUB_VERBOSITY
+                value: "debug"
               - name: HF_TOKEN
                 valueFrom:
                   secretKeyRef:
                     name: hf-token-secret
                     key: token
+              - name: NCCL_DEBUG
+                value: "TRACE"
               - name: MODEL_REPO
                 value: "deepseek-ai/DeepSeek-R1"
             command: ["/bin/bash"]
@@ -33,21 +37,23 @@ spec:
               - >
                 wget https://raw.githubusercontent.com/kubernetes-sigs/lws/main/docs/examples/vllm/build/ray_init.sh -O /ray_init.sh; 
                 chmod +x /ray_init.sh;
-                /ray_init.sh leader --ray_cluster_size=$(LWS_GROUP_SIZE); 
+                /ray_init.sh leader --ray_cluster_size=$(LWS_GROUP_SIZE);
+                pip install huggingface_hub
+                huggingface-cli download ${MODEL_REPO}
                 vllm serve ${MODEL_REPO}
                 --host 0.0.0.0
                 --port 8000
                 --trust-remote-code
                 --tensor-parallel-size 8
-                --pipeline_parallel_size 2
+                --pipeline_parallel_size 3
             resources:
               limits:
                 nvidia.com/gpu: "8"
                 memory: 512Gi
-                ephemeral-storage: 800Gi
+                ephemeral-storage: 400Gi
               requests:
-                ephemeral-storage: 800Gi
-                cpu: 48
+                cpu: 32
+                ephemeral-storage: 400Gi
             ports:
               - containerPort: 8080
             readinessProbe:
@@ -79,11 +85,15 @@ spec:
                 value: "1"
               - name: HF_HOME
                 value: "/local/huggingface"
+              - name: HF_HUB_VERBOSITY
+                value: "debug"
               - name: HF_TOKEN
                 valueFrom:
                   secretKeyRef:
                     name: hf-token-secret
                     key: token
+              - name: NCCL_DEBUG
+                value: "TRACE"
               - name: MODEL_REPO
                 value: "deepseek-ai/DeepSeek-R1"
             command: ["/bin/bash"]
@@ -97,24 +107,24 @@ spec:
               limits:
                 nvidia.com/gpu: "8"
                 memory: 512Gi
-                ephemeral-storage: 800Gi
+                ephemeral-storage: 400Gi
               requests:
-                ephemeral-storage: 800Gi
-                cpu: 48
+                cpu: 32
+                ephemeral-storage: 400Gi
             volumeMounts:
               - name: local-storage
                 mountPath: /local
-              - mountPath: /dev/shm
-                name: dshm   
+              - name: shm
+                mountPath: /dev/shm
         volumes:
         - name: local-storage
           hostPath:
             path: /root/local
             type: DirectoryOrCreate
-        - name: dshm
+        - name: shm
           emptyDir:
             medium: Memory
-            sizeLimit: 15Gi
+            sizeLimit: "15Gi"
 ---
 apiVersion: v1
 kind: Service

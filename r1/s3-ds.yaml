@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: s3-sync-daemonset
+  labels:
+    app: s3-sync
+spec:
+  selector:
+    matchLabels:
+      name: s3-sync
+  template:
+    metadata:
+      labels:
+        name: s3-sync
+    spec:
+      hostNetwork: true
+      containers:
+      - name: s3-sync-container
+        image: amazon/aws-cli:latest
+        command: ["/bin/sh", "-c"]
+        env:
+        - name: AWS_REGION
+          value: "us-west-2"
+        args:
+          - |
+            set -x
+            echo "creating directory if it does not exist"
+            if [ ! -d /root/local ]; then
+              mkdir -p /root/local
+            fi
+            echo "running aws s3 sync"
+            aws s3 sync s3://dims-deepseek-ai/models/ /root/local/ --exclude "*" --include "huggingface-with-r1-model.tar"
+            if [ -f /root/local/huggingface-with-r1-model.tar ]; then
+              echo "untar file"
+              yum install -y tar
+              tar --strip-components=1 --skip-old-files -xvf /root/local/huggingface-with-r1-model.tar -C /root/local
+            else
+              echo "File not found. Skipping untar"
+              echo "listing files in /root/local"
+              find /root/local -type f
+            fi
+        volumeMounts:
+        - name: host-root
+          mountPath: /root/local
+      volumes:
+      - name: host-root
+        hostPath:
+          path: /root/local
+          type: DirectoryOrCreate
+      restartPolicy: Always
