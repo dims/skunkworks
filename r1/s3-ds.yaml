@@ -39,6 +39,8 @@ spec:
               echo "listing files in /root/local"
               find /root/local -type f
             fi
+            echo "zzzz...."
+            sleep infinity
         volumeMounts:
         - name: host-root
           mountPath: /root/local
