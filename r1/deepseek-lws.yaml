@@ -5,7 +5,7 @@ metadata:
 spec:
   replicas: 1
   leaderWorkerTemplate:
-    size: 2
+    size: 4
     restartPolicy: RecreateGroupOnPodRestart
     leaderTemplate:
       metadata:
@@ -30,7 +30,7 @@ spec:
               - name: NCCL_DEBUG
                 value: "TRACE"
               - name: MODEL_REPO
-                value: "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
+                value: "deepseek-ai/DeepSeek-R1-Distill-Llama-70B"
             command: ["/bin/bash"]
             args:
               - "-c"
@@ -45,8 +45,8 @@ spec:
                   --host 0.0.0.0 \
                   --port 8000 \
                   --trust-remote-code \
-                  --tensor-parallel-size 4 \
-                  --pipeline_parallel_size 2 \
+                  --tensor-parallel-size 16 \
+                  --pipeline-parallel-size 1 \
                   --max-model-len 32768 \
                   --gpu_memory_utilization 0.97 \
                   --dtype=half
@@ -84,22 +84,6 @@ spec:
         containers:
           - name: vllm-worker
             image: vllm/vllm-openai:latest
-            env:
-              - name: HF_HUB_ENABLE_HF_TRANSFER
-                value: "1"
-              - name: HF_HOME
-                value: "/local/huggingface"
-              - name: HF_HUB_VERBOSITY
-                value: "debug"
-              - name: HF_TOKEN
-                valueFrom:
-                  secretKeyRef:
-                    name: hf-token-secret
-                    key: token
-              - name: NCCL_DEBUG
-                value: "TRACE"
-              - name: MODEL_REPO
-                value: "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
             command: ["/bin/bash"]
             args:
               - "-c"

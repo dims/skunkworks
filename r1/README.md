@@ -2,10 +2,10 @@ Notes
 =====
 
 ```bash
-eksdemo create cluster testing-013-r1-distill-qwen-32b \
+eksdemo create cluster testing-003-r1-distill-llama-70b \
   --os AmazonLinux2023 \
   --instance g4dn.12xlarge \
-  --max 2 --nodes 2 \
+  --max 4 --nodes 4 \
   --volume-size 2048 --volume-type io2 \
   --no-taints
 ```
@@ -23,12 +23,19 @@ kubectl apply -f deepseek-lws.yaml
 ```
 
 ```bash
-kubectl port-forward svc/vllm-leader 8000:8080
+kubectl port-forward svc/vllm-leader 8000:8000
 ```
 
 ```bash
-eksdemo delete cluster testing-013-r1-distill-qwen-32b
+eksdemo delete cluster testing-003-r1-distill-llama-70b
 ```
+
+Links
+=====
+- https://huggingface.co/deepseek-ai/DeepSeek-R1
+- https://community.aws/content/2sJofoAecl6jVdDwVqglbZwKz2E/hosting-deepseek-r1-on-amazon-eks
+- https://apxml.com/posts/gpu-requirements-deepseek-r1
+- https://unsloth.ai/blog/deepseekr1-dynamic
 
 Appendix
 ========
