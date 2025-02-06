@@ -2,11 +2,41 @@ Notes
 =====
 
 ```bash
-eksdemo create cluster testing-011-deep-seek-llama-r1 --os AmazonLinux2023 --instance m6a.4xlarge --max 3 --nodes 3 --volume-size 2048 --volume-type io2
+eksdemo create cluster testing-013-r1-distill-qwen-32b \
+  --os AmazonLinux2023 \
+  --instance g4dn.12xlarge \
+  --max 2 --nodes 2 \
+  --volume-size 2048 --volume-type io2 \
+  --no-taints
 ```
 
 ```bash
-cat <<EOF | eksctl create nodegroup -f - --timeout 180m
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.0/deployments/static/nvidia-device-plugin.yml
+```
+
+```bash
+helm install lws $HOME/go/src/sigs.k8s.io/lws/charts/lws --create-namespace --namespace lws-system
+```
+
+```bash
+kubectl apply -f deepseek-lws.yaml
+```
+
+```bash
+kubectl port-forward svc/vllm-leader 8000:8080
+```
+
+```bash
+eksdemo delete cluster testing-013-r1-distill-qwen-32b
+```
+
+Appendix
+========
+
+If you want to create a nodegroup with p4d.24xlarge instances AFTER creating an eks cluster, you can use the following command:
+
+```bash
+cat <<EOF | eksctl create nodegroup -f -
 apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
@@ -33,19 +63,4 @@ managedNodeGroups:
     privateNetworking: true
     spot: false
 EOF
-```
-
-
-// p4d.24xlarge
-
-```bash
-helm install lws $HOME/go/src/sigs.k8s.io/lws/charts/lws --create-namespace --namespace lws-system
-```
-
-```bash
-kubectl apply -f deepseek-lws.yaml
-```
-
-```bash
-eksdemo delete cluster testing-011-deep-seek-llama-r1
 ```

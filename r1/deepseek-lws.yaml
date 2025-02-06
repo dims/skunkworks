@@ -5,7 +5,7 @@ metadata:
 spec:
   replicas: 1
   leaderWorkerTemplate:
-    size: 3
+    size: 2
     restartPolicy: RecreateGroupOnPodRestart
     leaderTemplate:
       metadata:
@@ -30,30 +30,34 @@ spec:
               - name: NCCL_DEBUG
                 value: "TRACE"
               - name: MODEL_REPO
-                value: "deepseek-ai/DeepSeek-R1"
+                value: "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
             command: ["/bin/bash"]
             args:
               - "-c"
-              - >
+              - |
+                set -x
                 wget https://raw.githubusercontent.com/kubernetes-sigs/lws/main/docs/examples/vllm/build/ray_init.sh -O /ray_init.sh; 
                 chmod +x /ray_init.sh;
                 /ray_init.sh leader --ray_cluster_size=$(LWS_GROUP_SIZE);
                 pip install huggingface_hub
                 huggingface-cli download ${MODEL_REPO}
-                vllm serve ${MODEL_REPO}
-                --host 0.0.0.0
-                --port 8000
-                --trust-remote-code
-                --tensor-parallel-size 8
-                --pipeline_parallel_size 3
+                vllm serve ${MODEL_REPO} \
+                  --host 0.0.0.0 \
+                  --port 8000 \
+                  --trust-remote-code \
+                  --tensor-parallel-size 4 \
+                  --pipeline_parallel_size 2 \
+                  --max-model-len 32768 \
+                  --gpu_memory_utilization 0.97 \
+                  --dtype=half
             resources:
               limits:
-                nvidia.com/gpu: "8"
-                memory: 512Gi
-                ephemeral-storage: 400Gi
+                nvidia.com/gpu: "4"
+                memory: 64Gi
+                ephemeral-storage: 200Gi
               requests:
-                cpu: 32
-                ephemeral-storage: 400Gi
+                cpu: 12
+                ephemeral-storage: 200Gi
             ports:
               - containerPort: 8080
             readinessProbe:
@@ -74,7 +78,7 @@ spec:
         - name: shm
           emptyDir:
             medium: Memory
-            sizeLimit: "15Gi"
+            sizeLimit: "32Gi"
     workerTemplate:
       spec:
         containers:
@@ -95,22 +99,23 @@ spec:
               - name: NCCL_DEBUG
                 value: "TRACE"
               - name: MODEL_REPO
-                value: "deepseek-ai/DeepSeek-R1"
+                value: "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
             command: ["/bin/bash"]
             args:
               - "-c"
-              - >
+              - |
+                set -x
                 wget https://raw.githubusercontent.com/kubernetes-sigs/lws/main/docs/examples/vllm/build/ray_init.sh -O /ray_init.sh; 
                 chmod +x /ray_init.sh;
                  /ray_init.sh worker --ray_address=$(LWS_LEADER_ADDRESS)
             resources:
               limits:
-                nvidia.com/gpu: "8"
-                memory: 512Gi
-                ephemeral-storage: 400Gi
+                nvidia.com/gpu: "4"
+                memory: 64Gi
+                ephemeral-storage: 200Gi
               requests:
-                cpu: 32
-                ephemeral-storage: 400Gi
+                cpu: 12
+                ephemeral-storage: 200Gi
             volumeMounts:
               - name: local-storage
                 mountPath: /local
@@ -124,7 +129,7 @@ spec:
         - name: shm
           emptyDir:
             medium: Memory
-            sizeLimit: "15Gi"
+            sizeLimit: "32Gi"
 ---
 apiVersion: v1
 kind: Service
@@ -132,14 +137,13 @@ metadata:
   name: vllm-leader
 spec:
   ports:
-    - name: http
-      port: 8080
-      protocol: TCP
-      targetPort: 8080
+    - name: port-8000
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP
   selector:
     leaderworkerset.sigs.k8s.io/name: vllm
     role: leader
-  type: ClusterIP
 ---
 apiVersion: v1
 kind: Secret
