@@ -55,9 +55,11 @@ spec:
                 nvidia.com/gpu: "4"
                 memory: 64Gi
                 ephemeral-storage: 200Gi
+                vpc.amazonaws.com/efa: 1
               requests:
                 cpu: 12
                 ephemeral-storage: 200Gi
+                vpc.amazonaws.com/efa: 1
             ports:
               - containerPort: 8080
             readinessProbe:
@@ -97,9 +99,11 @@ spec:
                 nvidia.com/gpu: "4"
                 memory: 64Gi
                 ephemeral-storage: 200Gi
+                vpc.amazonaws.com/efa: 1
               requests:
                 cpu: 12
                 ephemeral-storage: 200Gi
+                vpc.amazonaws.com/efa: 1
             volumeMounts:
               - name: local-storage
                 mountPath: /local

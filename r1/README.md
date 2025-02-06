@@ -2,12 +2,18 @@ Notes
 =====
 
 ```bash
-eksdemo create cluster testing-003-r1-distill-llama-70b \
+eksdemo create cluster testing-005-r1-distill-llama-70b \
   --os AmazonLinux2023 \
-  --instance g4dn.12xlarge \
+  --instance g5.12xlarge \
   --max 4 --nodes 4 \
   --volume-size 2048 --volume-type io2 \
+  --enable-efa \
   --no-taints
+```
+
+```bash
+helm repo add eks https://aws.github.io/eks-charts
+helm install aws-efa-k8s-device-plugin --namespace kube-system eks/aws-efa-k8s-device-plugin
 ```
 
 ```bash
@@ -27,7 +33,7 @@ kubectl port-forward svc/vllm-leader 8000:8000
 ```
 
 ```bash
-eksdemo delete cluster testing-003-r1-distill-llama-70b
+eksdemo delete cluster testing-005-r1-distill-llama-70b
 ```
 
 Links
