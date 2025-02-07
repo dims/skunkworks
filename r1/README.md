@@ -2,12 +2,13 @@ Notes
 =====
 
 ```bash
-eksdemo create cluster testing-005-r1-distill-llama-70b \
+eksdemo create cluster testing-006-r1-distill-llama-70b \
   --os AmazonLinux2023 \
   --instance g5.12xlarge \
   --max 4 --nodes 4 \
   --volume-size 2048 --volume-type io2 \
   --enable-efa \
+  --addons eks-pod-identity-agent \
   --no-taints
 ```
 
@@ -33,7 +34,7 @@ kubectl port-forward svc/vllm-leader 8000:8000
 ```
 
 ```bash
-eksdemo delete cluster testing-005-r1-distill-llama-70b
+eksdemo delete cluster testing-006-r1-distill-llama-70b
 ```
 
 Links
@@ -42,6 +43,8 @@ Links
 - https://community.aws/content/2sJofoAecl6jVdDwVqglbZwKz2E/hosting-deepseek-r1-on-amazon-eks
 - https://apxml.com/posts/gpu-requirements-deepseek-r1
 - https://unsloth.ai/blog/deepseekr1-dynamic
+- https://aws-ia.github.io/terraform-aws-eks-blueprints/patterns/machine-learning/multi-node-vllm/#dockerfile
+- https://github.com/aws-ia/terraform-aws-eks-blueprints/blob/main/patterns/multi-node-vllm/Dockerfile
 
 Appendix
 ========
