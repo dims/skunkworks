@@ -38,30 +38,10 @@ spec:
               - |
                 set -x
 
-                # download and install efa
-                apt update && apt install -y libhwloc-dev
-                cd /tmp
-                export EFA_INSTALLER_VERSION=1.38.0
-                curl -sL "https://efa-installer.amazonaws.com/aws-efa-installer-${EFA_INSTALLER_VERSION}.tar.gz" | tar xvz
-                cd aws-efa-installer
-                ./efa_installer.sh --yes --skip-kmod --skip-limit-conf --no-verify --mpi openmpi5
-
-                # download and install nccl and aws-ofi-nccl artifacts
-                # artifacts built using instructions here:
-                #   https://aws-ia.github.io/terraform-aws-eks-blueprints/patterns/machine-learning/multi-node-vllm/#dockerfile
-                pip install awscli
-                aws s3 cp s3://dims-deepseek-ai/efa-nccl-and-aws-ofi-nccl.tgz /tmp/efa-nccl-and-aws-ofi-nccl.tgz || exit 1
-                tar -xzf /tmp/efa-nccl-and-aws-ofi-nccl.tgz -C /
-                ldconfig
-                export LD_PRELOAD=/opt/nccl/lib/libnccl.so
-
-                # download and install ray_init.sh
-                wget https://raw.githubusercontent.com/kubernetes-sigs/lws/main/docs/examples/vllm/build/ray_init.sh -O /ray_init.sh; 
-                chmod +x /ray_init.sh;
+                # start ray leader
                 /ray_init.sh leader --ray_cluster_size=$(LWS_GROUP_SIZE);
 
                 # download and install model
-                pip install huggingface_hub
                 huggingface-cli download ${MODEL_REPO}
 
                 # start vllm server
@@ -116,27 +96,8 @@ spec:
               - "-c"
               - |
                 set -x
-                
-                # download and install efa
-                apt update && apt install -y libhwloc-dev
-                cd /tmp
-                export EFA_INSTALLER_VERSION=1.38.0
-                curl -sL "https://efa-installer.amazonaws.com/aws-efa-installer-${EFA_INSTALLER_VERSION}.tar.gz" | tar xvz
-                cd aws-efa-installer
-                ./efa_installer.sh --yes --skip-kmod --skip-limit-conf --no-verify --mpi openmpi5
-
-                # download and install efa, nccl and aws-ofi-nccl artifacts
-                # artifacts built using instructions here:
-                #   https://aws-ia.github.io/terraform-aws-eks-blueprints/patterns/machine-learning/multi-node-vllm/#dockerfile
-                pip install awscli
-                aws s3 cp s3://dims-deepseek-ai/efa-nccl-and-aws-ofi-nccl.tgz /tmp/efa-nccl-and-aws-ofi-nccl.tgz
-                tar -xzf /tmp/efa-nccl-and-aws-ofi-nccl.tgz -C /
-                ldconfig
-                export LD_PRELOAD=/opt/nccl/lib/libnccl.so
-                
-                wget https://raw.githubusercontent.com/kubernetes-sigs/lws/main/docs/examples/vllm/build/ray_init.sh -O /ray_init.sh; 
-                chmod +x /ray_init.sh;
-                 /ray_init.sh worker --ray_address=$(LWS_LEADER_ADDRESS)
+                # start ray worker
+                /ray_init.sh worker --ray_address=$(LWS_LEADER_ADDRESS)
             resources:
               limits:
                 nvidia.com/gpu: "4"

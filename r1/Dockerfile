@@ -83,4 +83,6 @@ ENV LD_PRELOAD=/opt/nccl/lib/libnccl.so
 RUN <<EOT
   wget https://raw.githubusercontent.com/kubernetes-sigs/lws/main/docs/examples/vllm/build/ray_init.sh -O /ray_init.sh;
   chmod +x /ray_init.sh
+
+  pip install huggingface_hub[hf_transfer]
 EOT
