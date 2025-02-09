@@ -2,27 +2,31 @@ Notes
 =====
 
 ```bash
-eksdemo create cluster testing-006-r1-distill-llama-70b \
+eksdemo create cluster testing-016-r1 \
   --os AmazonLinux2023 \
   --instance g5.12xlarge \
   --max 4 --nodes 4 \
-  --volume-size 2048 --volume-type io2 \
+  --volume-size 2048 --volume-type io2 --volume-iops 10000 \
   --enable-efa \
   --addons eks-pod-identity-agent \
-  --no-taints
+  --no-taints \
+  --timeout 120m
 ```
 
 ```bash
-helm repo add eks https://aws.github.io/eks-charts
-helm install aws-efa-k8s-device-plugin --namespace kube-system eks/aws-efa-k8s-device-plugin
-```
-
-```bash
-kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.0/deployments/static/nvidia-device-plugin.yml
+eksdemo delete cluster $(eksctl get cluster -o json | jq -r '.[0].Name')
 ```
 
 ```bash
 helm install lws $HOME/go/src/sigs.k8s.io/lws/charts/lws --create-namespace --namespace lws-system
+```
+
+```bash
+kubectl apply -f sa.yaml
+aws eks create-pod-identity-association --cluster-name $(eksctl get cluster -o json | jq -r '.[0].Name') \
+  --namespace default \
+  --service-account my-service-account \
+  --role-arn arn:aws:iam::086752300739:role/S3ReadRole
 ```
 
 ```bash
@@ -31,10 +35,6 @@ kubectl apply -f deepseek-lws.yaml
 
 ```bash
 kubectl port-forward svc/vllm-leader 8000:8000
-```
-
-```bash
-eksdemo delete cluster testing-006-r1-distill-llama-70b
 ```
 
 Links
@@ -79,4 +79,13 @@ managedNodeGroups:
     privateNetworking: true
     spot: false
 EOF
+```
+
+```bash
+helm repo add eks https://aws.github.io/eks-charts
+helm install aws-efa-k8s-device-plugin --namespace kube-system eks/aws-efa-k8s-device-plugin
+```
+
+```bash
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.0/deployments/static/nvidia-device-plugin.yml
 ```

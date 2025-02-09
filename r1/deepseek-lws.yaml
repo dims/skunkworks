@@ -50,7 +50,7 @@ spec:
                 # artifacts built using instructions here:
                 #   https://aws-ia.github.io/terraform-aws-eks-blueprints/patterns/machine-learning/multi-node-vllm/#dockerfile
                 pip install awscli
-                aws s3 cp s3://dims-deepseek-ai/efa-nccl-and-aws-ofi-nccl.tgz /tmp/efa-nccl-and-aws-ofi-nccl.tgz
+                aws s3 cp s3://dims-deepseek-ai/efa-nccl-and-aws-ofi-nccl.tgz /tmp/efa-nccl-and-aws-ofi-nccl.tgz || exit 1
                 tar -xzf /tmp/efa-nccl-and-aws-ofi-nccl.tgz -C /
                 ldconfig
                 export LD_PRELOAD=/opt/nccl/lib/libnccl.so
