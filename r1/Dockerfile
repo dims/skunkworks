@@ -46,7 +46,7 @@ RUN <<EOT
   make -j $(nproc) src.build \
     BUILDDIR=/opt/nccl \
     CUDA_HOME=/usr/local/cuda \
-    NVCC_GENCODE="-gencode=arch=compute_89,code=sm_89 -gencode=arch=compute_89,code=sm_89"
+    NVCC_GENCODE="-gencode=arch=compute_86,code=sm_86 -gencode=arch=compute_86,code=sm_86"
 
   echo "/opt/nccl/lib" > /etc/ld.so.conf.d/000_nccl.conf
   ldconfig
@@ -80,5 +80,7 @@ COPY --from=efa-build /etc/ld.so.conf.d /etc/ld.so.conf.d
 
 ENV LD_PRELOAD=/opt/nccl/lib/libnccl.so
 
-COPY ray_init.sh /vllm-workspace/ray_init.sh
-RUN chmod +x /vllm-workspace/ray_init.sh
+RUN <<EOT
+  wget https://raw.githubusercontent.com/kubernetes-sigs/lws/main/docs/examples/vllm/build/ray_init.sh -O /ray_init.sh;
+  chmod +x /vllm-workspace/ray_init.sh
+EOT
