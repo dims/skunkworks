@@ -42,7 +42,7 @@ jobs:
       with:
         context: ./r1
         file: ./r1/Dockerfile
-        push: true
+        push: false
         tags: |
           ghcr.io/${{ github.repository }}/vllm:latest
           ghcr.io/${{ github.repository }}/vllm:${{ github.sha }}
