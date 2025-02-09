@@ -5,8 +5,8 @@ ARG CUDA_VERSION=12.4.1
 FROM nvidia/cuda:${CUDA_VERSION}-devel-ubuntu20.04 AS efa-build
 
 ARG AWS_OFI_NCCL_VERSION=1.13.2-aws
-ARG EFA_INSTALLER_VERSION=1.37.0
-ARG NCCL_VERSION=2.23.4
+ARG EFA_INSTALLER_VERSION=1.38.0
+ARG NCCL_VERSION=2.24.3
 
 RUN <<EOT
   rm -f /etc/apt/apt.conf.d/docker-clean
@@ -73,6 +73,13 @@ EOT
 
 FROM docker.io/vllm/vllm-openai:latest
 
+COPY --from=efa-build /usr/lib/x86_64-linux-gnu/libefa.* /usr/lib/x86_64-linux-gnu/
+COPY --from=efa-build /usr/lib/x86_64-linux-gnu/libhns.* /usr/lib/x86_64-linux-gnu/
+COPY --from=efa-build /usr/lib/x86_64-linux-gnu/libmana.* /usr/lib/x86_64-linux-gnu/
+COPY --from=efa-build /usr/lib/x86_64-linux-gnu/libmlx4.* /usr/lib/x86_64-linux-gnu/
+COPY --from=efa-build /usr/lib/x86_64-linux-gnu/libmlx5.* /usr/lib/x86_64-linux-gnu/
+COPY --from=efa-build /usr/lib/x86_64-linux-gnu/libibverbs.so* /usr/lib/x86_64-linux-gnu/
+COPY --from=efa-build /usr/lib/x86_64-linux-gnu/libibverbs /usr/lib/x86_64-linux-gnu/libibverbs
 COPY --from=efa-build /opt/amazon /opt/amazon
 COPY --from=efa-build /opt/aws-ofi-nccl /opt/aws-ofi-nccl
 COPY --from=efa-build /opt/nccl/lib /opt/nccl/lib
