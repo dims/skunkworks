@@ -74,6 +74,7 @@ EOT
 FROM docker.io/vllm/vllm-openai:latest
 
 COPY --from=efa-build /usr/lib/x86_64-linux-gnu/libhwloc.* /usr/lib/x86_64-linux-gnu/
+COPY --from=efa-build /usr/lib/x86_64-linux-gnu/libltdl.* /usr/lib/x86_64-linux-gnu/
 COPY --from=efa-build /usr/lib/x86_64-linux-gnu/libefa.* /usr/lib/x86_64-linux-gnu/
 COPY --from=efa-build /usr/lib/x86_64-linux-gnu/libhns.* /usr/lib/x86_64-linux-gnu/
 COPY --from=efa-build /usr/lib/x86_64-linux-gnu/libmana.* /usr/lib/x86_64-linux-gnu/
