@@ -84,5 +84,10 @@ RUN <<EOT
   wget https://raw.githubusercontent.com/kubernetes-sigs/lws/main/docs/examples/vllm/build/ray_init.sh -O /ray_init.sh;
   chmod +x /ray_init.sh
 
+  apt-get update && apt-get install -y  --no-install-recommends \
+      libhwloc-dev \
+      hwloc \
+      && rm -rf /var/lib/apt/lists/*
+
   pip install huggingface_hub[hf_transfer]
 EOT
