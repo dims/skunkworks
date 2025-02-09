@@ -12,10 +12,9 @@ spec:
         labels:
           role: leader
       spec:
-        serviceAccountName: my-service-account
         containers:
           - name: vllm-leader
-            image: vllm/vllm-openai:latest
+            image: ghcr.io/dims/skunkworks/vllm:latest
             env:
               - name: HF_HUB_ENABLE_HF_TRANSFER
                 value: "1"
@@ -87,10 +86,9 @@ spec:
             sizeLimit: "32Gi"
     workerTemplate:
       spec:
-        serviceAccountName: my-service-account
         containers:
           - name: vllm-worker
-            image: vllm/vllm-openai:latest
+            image: ghcr.io/dims/skunkworks/vllm:latest
             command: ["/bin/bash"]
             args:
               - "-c"
