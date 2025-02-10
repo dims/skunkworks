@@ -50,7 +50,6 @@ spec:
                   --trust-remote-code \
                   --tensor-parallel-size 16 \
                   --pipeline-parallel-size 1 \
-                  --max-model-len 32768 \
                   --gpu_memory_utilization 0.97 \
                   --dtype=half
             resources:
@@ -89,6 +88,20 @@ spec:
         containers:
           - name: vllm-worker
             image: ghcr.io/dims/skunkworks/vllm:latest
+            env:
+              - name: HF_HUB_ENABLE_HF_TRANSFER
+                value: "1"
+              - name: HF_HOME
+                value: "/local/huggingface"
+              - name: HF_HUB_VERBOSITY
+                value: "debug"
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-token-secret
+                    key: token
+              - name: NCCL_DEBUG
+                value: "TRACE"
             command: ["/bin/bash"]
             args:
               - "-c"
