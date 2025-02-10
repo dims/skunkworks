@@ -37,6 +37,9 @@ spec:
               - |
                 set -x
 
+                # Switch on the ray dashboard
+                sed -i 's/ray start --head/ray start --head --dashboard-host=0.0.0.0/' /ray_init.sh
+
                 # start ray leader
                 /ray_init.sh leader --ray_cluster_size=$(LWS_GROUP_SIZE);
 
@@ -63,10 +66,10 @@ spec:
                 ephemeral-storage: 200Gi
                 vpc.amazonaws.com/efa: 1
             ports:
-              - containerPort: 8080
+              - containerPort: 8000
             readinessProbe:
               tcpSocket:
-                port: 8080
+                port: 8000
               initialDelaySeconds: 15
               periodSeconds: 10
             volumeMounts:
@@ -143,6 +146,9 @@ spec:
     - name: port-8000
       port: 8000
       targetPort: 8000
+    - name: port-8265
+      port: 8265
+      targetPort: 8265
   type: ClusterIP
   selector:
     leaderworkerset.sigs.k8s.io/name: vllm
