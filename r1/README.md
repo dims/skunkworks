@@ -3,15 +3,16 @@ Notes
 
 - Create a new EKS cluster with the following command:
 ```bash
-eksdemo create cluster testing-018-r1 \
+eksdemo create cluster dims-testing-001-r1 \
   --os AmazonLinux2023 \
-  --instance g5.12xlarge \
-  --max 4 --nodes 4 \
-  --volume-size 2048 --volume-type io2 --volume-iops 10000 \
+  --instance p5.48xlarge \
+  --max 2 --nodes 2 \
+  --volume-size 2048 \
   --enable-efa \
   --addons eks-pod-identity-agent \
   --no-taints \
-  --timeout 120m
+  --timeout 120m \
+  --capacity-reservation-id "cr-0d1f6d266b2ff8f30"
 ```
 If you want to inspect the eksctl config generated add `--dry-run` to the command above.
 
@@ -35,7 +36,7 @@ kubectl apply -f deepseek-lws.yaml
 
 - To access the DeepSeek-R1 model using your localhost, use the following command:
 ```bash
-kubectl port-forward svc/vllm-leader 8000:8000
+kubectl port-forward svc/vllm-leader 8000:8000 8265:8265
 ```
 Links
 =====

@@ -5,7 +5,7 @@ metadata:
 spec:
   replicas: 1
   leaderWorkerTemplate:
-    size: 4
+    size: 2
     restartPolicy: RecreateGroupOnPodRestart
     leaderTemplate:
       metadata:
@@ -51,10 +51,9 @@ spec:
                   --host 0.0.0.0 \
                   --port 8000 \
                   --trust-remote-code \
-                  --tensor-parallel-size 16 \
+                  --tensor-parallel-size 8 \
                   --pipeline-parallel-size 1 \
-                  --gpu_memory_utilization 0.97 \
-                  --dtype=half
+                  --gpu_memory_utilization 0.97
             resources:
               limits:
                 nvidia.com/gpu: "4"
