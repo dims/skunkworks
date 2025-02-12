@@ -46,7 +46,7 @@ RUN <<EOT
   make -j $(nproc) src.build \
     BUILDDIR=/opt/nccl \
     CUDA_HOME=/usr/local/cuda \
-    NVCC_GENCODE="-gencode=arch=compute_86,code=sm_86 -gencode=arch=compute_86,code=sm_86"
+    NVCC_GENCODE="-gencode=arch=compute_90,code=sm_90 -gencode=arch=compute_90,code=sm_90"
 
   echo "/opt/nccl/lib" > /etc/ld.so.conf.d/000_nccl.conf
   ldconfig
