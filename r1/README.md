@@ -3,16 +3,16 @@ Notes
 
 - Create a new EKS cluster with the following command:
 ```bash
-eksdemo create cluster dims-testing-001-r1 \
+eksdemo create cluster dims-testing-004-r1 \
   --os AmazonLinux2023 \
-  --instance p5.48xlarge \
-  --max 2 --nodes 2 \
+  --instance g6e.48xlarge \
+  --max 4 --nodes 4 \
   --volume-size 2048 \
   --enable-efa \
   --addons eks-pod-identity-agent \
   --no-taints \
   --timeout 120m \
-  --capacity-reservation-id "cr-0d1f6d266b2ff8f30"
+  --capacity-reservation-id "cr-03913ce75616f99be"
 ```
 If you want to inspect the eksctl config generated add `--dry-run` to the command above.
 
