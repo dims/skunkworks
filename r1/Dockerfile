@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
-# copied from https://github.com/aws-ia/terraform-aws-eks-blueprints/blob/main/patterns/multi-node-vllm/Dockerfile
 
 ARG CUDA_VERSION=12.4.1
+ARG COMPUTE_CAPABILITY_VERSION=90
 FROM nvidia/cuda:${CUDA_VERSION}-devel-ubuntu20.04 AS efa-build
 
 ARG AWS_OFI_NCCL_VERSION=1.13.2-aws
@@ -46,7 +46,7 @@ RUN <<EOT
   make -j $(nproc) src.build \
     BUILDDIR=/opt/nccl \
     CUDA_HOME=/usr/local/cuda \
-    NVCC_GENCODE="-gencode=arch=compute_90,code=sm_90 -gencode=arch=compute_90,code=sm_90"
+    NVCC_GENCODE="-gencode=arch=compute_${COMPUTE_CAPABILITY_VERSION},code=sm_${COMPUTE_CAPABILITY_VERSION} -gencode=arch=compute_${COMPUTE_CAPABILITY_VERSION},code=sm_${COMPUTE_CAPABILITY_VERSION}"
 
   echo "/opt/nccl/lib" > /etc/ld.so.conf.d/000_nccl.conf
   ldconfig
