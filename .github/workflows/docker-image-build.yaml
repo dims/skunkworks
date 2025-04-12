@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Lint Dockerfile
+      - name: Lint Dockerfile for r1
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: ./r1/Dockerfile
@@ -51,7 +51,7 @@ jobs:
         sudo docker builder prune -a
     - run: df -h
 
-    - name: Build and push Docker image
+    - name: Build and push Docker image for deepseek r1
       uses: docker/build-push-action@v6
       with:
         context: ./r1
@@ -62,3 +62,15 @@ jobs:
         tags: |
           ghcr.io/${{ github.repository }}/vllm:${{ matrix.compute_version }}-latest
           ghcr.io/${{ github.repository }}/vllm:${{ matrix.compute_version }}-${{ github.sha }}
+
+    - name: Build and push Docker image for deepseek v3
+      uses: docker/build-push-action@v6
+      with:
+        context: ./v3
+        file: ./v3/Dockerfile
+        push: true
+        build-args: |
+          COMPUTE_CAPABILITY_VERSION=${{ matrix.compute_version }}
+        tags: |
+          ghcr.io/${{ github.repository }}/vllm-v3:${{ matrix.compute_version }}-latest
+          ghcr.io/${{ github.repository }}/vllm-v3:${{ matrix.compute_version }}-${{ github.sha }}

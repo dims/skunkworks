@@ -1,0 +1,201 @@
+apiVersion: leaderworkerset.x-k8s.io/v1
+kind: LeaderWorkerSet
+metadata:
+  name: vllm
+spec:
+  replicas: 1
+  leaderWorkerTemplate:
+    size: 4
+    restartPolicy: RecreateGroupOnPodRestart
+    leaderTemplate:
+      metadata:
+        labels:
+          role: leader
+      spec:
+        containers:
+          - name: vllm-leader
+            image: ghcr.io/dims/skunkworks/vllm-v3:89-64c4c84521c267c00d3a4375686bb992de288dc4
+            securityContext:
+              privileged: true
+              capabilities:
+                add: ["IPC_LOCK"]
+            env:
+              - name: NCCL_DEBUG
+                value: "TRACE"
+              - name: NCCL_DEBUG_SUBSYS
+                value: "ALL"
+              - name: NCCL_IB_DISABLE
+                value: "1"
+              - name: NCCL_P2P_DISABLE
+                value: "1"
+              - name: NCCL_NET_GDR_LEVEL
+                value: "0"
+              - name: NCCL_SHM_DISABLE
+                value: "1"
+              - name: PYTORCH_CUDA_ALLOC_CONF
+                value: "max_split_size_mb:512,expandable_segments:True"
+              - name: CUDA_MEMORY_FRACTION
+                value: "0.95"
+              - name: FI_EFA_USE_DEVICE_RDMA
+                value: "1"
+              - name: FI_PROVIDER
+                value: "efa"
+              - name: FI_EFA_FORK_SAFE
+                value: "1"
+              - name: HF_HUB_ENABLE_HF_TRANSFER
+                value: "1"
+              - name: HF_HOME
+                value: "/local/huggingface"
+              - name: HF_HUB_VERBOSITY
+                value: "debug"
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-token-secret
+                    key: token
+              - name: MODEL_REPO
+                value: "deepseek-ai/DeepSeek-V3"
+            command: ["/bin/bash"]
+            args:
+              - "-c"
+              - |
+                set -x
+
+                # Switch on the ray dashboard
+                sed -i 's/ray start --head/ray start --head --dashboard-host=0.0.0.0/' /ray_init.sh
+
+                # start ray leader
+                /ray_init.sh leader --ray_cluster_size=$(LWS_GROUP_SIZE);
+                sleep 30
+                ray status
+
+                # download and install model
+                huggingface-cli download ${MODEL_REPO}
+
+                # start vllm server
+                vllm serve ${MODEL_REPO} \
+                  --host 0.0.0.0 \
+                  --port 8000 \
+                  --tensor-parallel-size 8 \
+                  --pipeline-parallel-size 4 \
+                  --disable-log-requests \
+                  --uvicorn-log-level error \
+                  --max-model-len 32768 \
+                  --max_num_seqs 1 \
+                  --trust-remote-code \
+                  --device cuda \
+                  --gpu-memory-utilization 0.95 \
+                  --quantization fp8 \
+                  --enforce-eager
+            resources:
+              limits:
+                nvidia.com/gpu: "8"
+                cpu: "96"
+                memory: 384Gi
+                vpc.amazonaws.com/efa: 4
+              requests:
+                nvidia.com/gpu: "8"
+                cpu: "96"
+                memory: 384Gi
+                vpc.amazonaws.com/efa: 4
+            ports:
+              - containerPort: 8000
+            readinessProbe:
+              tcpSocket:
+                port: 8000
+              initialDelaySeconds: 15
+              periodSeconds: 10
+            volumeMounts:
+              - name: local-storage
+                mountPath: /local
+              - name: shm
+                mountPath: /dev/shm
+        volumes:
+        - name: local-storage
+          hostPath:
+            path: /root/local
+            type: DirectoryOrCreate
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: "512Gi"
+    workerTemplate:
+      spec:
+        containers:
+          - name: vllm-worker
+            image: ghcr.io/dims/skunkworks/vllm-v3:89-64c4c84521c267c00d3a4375686bb992de288dc4
+            securityContext:
+              privileged: true
+              capabilities:
+                add: ["IPC_LOCK"]
+            env:
+              - name: HF_HUB_ENABLE_HF_TRANSFER
+                value: "1"
+              - name: HF_HOME
+                value: "/local/huggingface"
+              - name: HF_HUB_VERBOSITY
+                value: "debug"
+              - name: HF_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: hf-token-secret
+                    key: token
+              - name: NCCL_DEBUG
+                value: "TRACE"
+            command: ["/bin/bash"]
+            args:
+              - "-c"
+              - |
+                set -x
+                # start ray worker
+                /ray_init.sh worker --ray_address=$(LWS_LEADER_ADDRESS)
+            resources:
+              limits:
+                nvidia.com/gpu: "8"
+                cpu: "96"
+                memory: 384Gi
+                vpc.amazonaws.com/efa: 4
+              requests:
+                nvidia.com/gpu: "8"
+                cpu: "96"
+                memory: 384Gi
+                vpc.amazonaws.com/efa: 4
+            volumeMounts:
+              - name: local-storage
+                mountPath: /local
+              - name: shm
+                mountPath: /dev/shm
+        volumes:
+        - name: local-storage
+          hostPath:
+            path: /root/local
+            type: DirectoryOrCreate
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: "512Gi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-leader
+spec:
+  ports:
+    - name: port-8000
+      port: 8000
+      targetPort: 8000
+    - name: port-8265
+      port: 8265
+      targetPort: 8265
+  type: ClusterIP
+  selector:
+    leaderworkerset.sigs.k8s.io/name: vllm
+    role: leader
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hf-token-secret
+type: Opaque
+data:
+  token: "aGZfTUVzd1BVRlVZc2ZVTkRRRkVzTXF0UVBvbUx1bXZoVmdXQg=="
