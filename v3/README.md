@@ -3,10 +3,10 @@ Notes
 
 - Create a new EKS cluster with the following command:
 ```bash
-eksdemo create cluster deepseek-cluster-001 \
+eksdemo create cluster deepseek-v3-cluster-001 \
   --os AmazonLinux2023 \
-  --instance p4d.24xlarge \
-  --max 2 --nodes 2 \
+  --instance g6e.48xlarge \
+  --max 4 --nodes 4 \
   --volume-size 2048 \
   --enable-efa \
   --addons eks-pod-identity-agent \
