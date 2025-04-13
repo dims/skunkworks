@@ -5,7 +5,7 @@ metadata:
 spec:
   replicas: 1
   leaderWorkerTemplate:
-    size: 4
+    size: 2
     restartPolicy: RecreateGroupOnPodRestart
     leaderTemplate:
       metadata:
@@ -14,7 +14,7 @@ spec:
       spec:
         containers:
           - name: vllm-leader
-            image: ghcr.io/dims/skunkworks/vllm-v3:89-64c4c84521c267c00d3a4375686bb992de288dc4
+            image: ghcr.io/dims/skunkworks/vllm-v3:89-7c0abcf3f700f111ae3ac47c75ae0e63c3ae223a
             securityContext:
               privileged: true
               capabilities:
@@ -90,12 +90,12 @@ spec:
             resources:
               limits:
                 nvidia.com/gpu: "8"
-                cpu: "96"
+                cpu: "48"
                 memory: 384Gi
                 vpc.amazonaws.com/efa: 4
               requests:
                 nvidia.com/gpu: "8"
-                cpu: "96"
+                cpu: "48"
                 memory: 384Gi
                 vpc.amazonaws.com/efa: 4
             ports:
@@ -123,7 +123,7 @@ spec:
       spec:
         containers:
           - name: vllm-worker
-            image: ghcr.io/dims/skunkworks/vllm-v3:89-64c4c84521c267c00d3a4375686bb992de288dc4
+            image: ghcr.io/dims/skunkworks/vllm-v3:89-7c0abcf3f700f111ae3ac47c75ae0e63c3ae223a
             securityContext:
               privileged: true
               capabilities:
@@ -152,12 +152,12 @@ spec:
             resources:
               limits:
                 nvidia.com/gpu: "8"
-                cpu: "96"
+                cpu: "48"
                 memory: 384Gi
                 vpc.amazonaws.com/efa: 4
               requests:
                 nvidia.com/gpu: "8"
-                cpu: "96"
+                cpu: "48"
                 memory: 384Gi
                 vpc.amazonaws.com/efa: 4
             volumeMounts:
