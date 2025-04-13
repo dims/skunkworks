@@ -32,6 +32,11 @@ case "$subcommand" in
       exit 1
     fi
 
+    until ray status --address $ray_address:$ray_port; do
+      echo "Waiting until the ray status is active for leader..."
+      sleep 5s;
+    done
+
     for (( i=0; i < $ray_init_timeout; i+=5 )); do
       ray start --address=$ray_address:$ray_port --block "${start_params[@]}"
       if [ $? -eq 0 ]; then

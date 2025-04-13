@@ -14,7 +14,7 @@ spec:
       spec:
         containers:
           - name: vllm-leader
-            image: ghcr.io/dims/skunkworks/vllm-v3:89-7c0abcf3f700f111ae3ac47c75ae0e63c3ae223a
+            image: ghcr.io/dims/skunkworks/vllm-v3:89-4df8ca0de7719671cd14554e1372c56ffd185bb3
             securityContext:
               privileged: true
               capabilities:
@@ -77,7 +77,7 @@ spec:
                   --host 0.0.0.0 \
                   --port 8000 \
                   --tensor-parallel-size 8 \
-                  --pipeline-parallel-size 4 \
+                  --pipeline-parallel-size 2 \
                   --disable-log-requests \
                   --uvicorn-log-level error \
                   --max-model-len 32768 \
@@ -123,7 +123,7 @@ spec:
       spec:
         containers:
           - name: vllm-worker
-            image: ghcr.io/dims/skunkworks/vllm-v3:89-7c0abcf3f700f111ae3ac47c75ae0e63c3ae223a
+            image: ghcr.io/dims/skunkworks/vllm-v3:89-4df8ca0de7719671cd14554e1372c56ffd185bb3
             securityContext:
               privileged: true
               capabilities:

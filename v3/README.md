@@ -33,7 +33,7 @@ helm install lws $HOME/go/src/sigs.k8s.io/lws/charts/lws --create-namespace --na
 kubectl apply -f deepseek-lws.yaml
 ```
 
-- To access the DeepSeek-R1 model using your localhost, use the following command:
+- To access the DeepSeek-V3 model using your localhost, use the following command:
 ```bash
 kubectl port-forward svc/vllm-leader 8000:8000 8265:8265
 ```
