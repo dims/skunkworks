@@ -5,7 +5,7 @@ metadata:
 spec:
   replicas: 1
   leaderWorkerTemplate:
-    size: 2
+    size: 4
     restartPolicy: RecreateGroupOnPodRestart
     leaderTemplate:
       metadata:
@@ -77,7 +77,7 @@ spec:
                   --host 0.0.0.0 \
                   --port 8000 \
                   --tensor-parallel-size 8 \
-                  --pipeline-parallel-size 2 \
+                  --pipeline-parallel-size 4 \
                   --disable-log-requests \
                   --uvicorn-log-level error \
                   --max-model-len 32768 \
@@ -90,12 +90,12 @@ spec:
             resources:
               limits:
                 nvidia.com/gpu: "8"
-                cpu: "48"
+                cpu: "96"
                 memory: 384Gi
                 vpc.amazonaws.com/efa: 4
               requests:
                 nvidia.com/gpu: "8"
-                cpu: "48"
+                cpu: "96"
                 memory: 384Gi
                 vpc.amazonaws.com/efa: 4
             ports:
@@ -152,12 +152,12 @@ spec:
             resources:
               limits:
                 nvidia.com/gpu: "8"
-                cpu: "48"
+                cpu: "96"
                 memory: 384Gi
                 vpc.amazonaws.com/efa: 4
               requests:
                 nvidia.com/gpu: "8"
-                cpu: "48"
+                cpu: "96"
                 memory: 384Gi
                 vpc.amazonaws.com/efa: 4
             volumeMounts:
