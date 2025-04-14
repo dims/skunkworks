@@ -57,12 +57,19 @@ ARG CUDA_MINOR_VERSION=4
 RUN <<EOT
   apt update
   apt install -y \
+    gcc-10 \
+    g++-10 \
     cuda-minimal-build-${CUDA_MAJOR_VERSION}-${CUDA_MINOR_VERSION} \
     git \
     libhwloc15 \
     libhwloc-dev \
     build-essential \
+    gcc-multilib \
+    libgcc-12-dev \
     make
+
+  # TODO - https://github.com/vllm-project/vllm/blob/eb8b5eb183b8428f7e58adf2559e7a8d9400fc30/Dockerfile#L33-L34
+  update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 110 --slave /usr/bin/g++ g++ /usr/bin/g++-10
 
   # EFA installer
   cd /tmp
