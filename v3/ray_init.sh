@@ -75,7 +75,7 @@ case "$subcommand" in
     fi
 
     # start the ray daemon
-    ray start --head --port=$ray_port "${start_params[@]}"
+    ray start --head --include-dashboard=true --port=$ray_port "${start_params[@]}"
 
     # wait until all workers are active
     for (( i=0; i < $ray_init_timeout; i+=5 )); do

@@ -61,9 +61,6 @@ spec:
               - |
                 set -x
 
-                # Switch on the ray dashboard
-                sed -i 's/ray start --head/ray start --head --dashboard-host=0.0.0.0/' /ray_init.sh
-
                 # start ray leader
                 /ray_init.sh leader --ray_cluster_size=$(LWS_GROUP_SIZE);
                 sleep 30
