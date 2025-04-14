@@ -38,6 +38,11 @@ kubectl apply -f deepseek-lws.yaml
 kubectl port-forward svc/vllm-leader 8000:8000 8265:8265
 ```
 
+- To check if the model is registered
+```bash
+curl -X GET "http://127.0.0.1:8000/v1/models" | jq
+```
+
 - To test the deployment use the following command:
 ```bash
 time curl -X POST "http://127.0.0.1:8000/v1/chat/completions" \
