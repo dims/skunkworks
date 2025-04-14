@@ -63,6 +63,9 @@ RUN <<EOT
     git \
     libhwloc15 \
     libhwloc-dev \
+    build-essential \
+    gcc-multilib \
+    libgcc-12-dev \
     make
 
   # TODO - https://github.com/vllm-project/vllm/blob/eb8b5eb183b8428f7e58adf2559e7a8d9400fc30/Dockerfile#L33-L34
