@@ -93,4 +93,5 @@ COPY ./ray_init.sh /ray_init.sh
 RUN <<EOT
   chmod +x /ray_init.sh
   pip install huggingface_hub[hf_transfer]
+  pip install -U "ray[default]" "ray[cgraph]"
 EOT
