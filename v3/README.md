@@ -37,6 +37,22 @@ kubectl apply -f deepseek-lws.yaml
 ```bash
 kubectl port-forward svc/vllm-leader 8000:8000 8265:8265
 ```
+
+- To test the deployment use the following command:
+```bash
+time curl -X POST "http://127.0.0.1:8000/v1/chat/completions" \
+-H "Content-Type: application/json" \
+-d '{
+    "model": "deepseek-ai/DeepSeek-V3",
+    "messages": [
+        {
+            "role": "user",
+            "content": "What is Kubernetes?"
+        }
+    ]
+}'
+```
+
 Links
 =====
 - https://huggingface.co/deepseek-ai/DeepSeek-R1
