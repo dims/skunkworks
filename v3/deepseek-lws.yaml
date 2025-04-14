@@ -14,7 +14,7 @@ spec:
       spec:
         containers:
           - name: vllm-leader
-            image: ghcr.io/dims/skunkworks/vllm-v3:89-18e07296f65ad2332e3de5b3c6a62159639d034c
+            image: ghcr.io/dims/skunkworks/vllm-v3:89-775754b81f110d1d5c3165ef277e5571b18e5da4
             securityContext:
               privileged: true
               capabilities:
@@ -117,7 +117,7 @@ spec:
       spec:
         containers:
           - name: vllm-worker
-            image: ghcr.io/dims/skunkworks/vllm-v3:89-18e07296f65ad2332e3de5b3c6a62159639d034c
+            image: ghcr.io/dims/skunkworks/vllm-v3:89-775754b81f110d1d5c3165ef277e5571b18e5da4
             securityContext:
               privileged: true
               capabilities:
