@@ -80,11 +80,11 @@ spec:
                   --pipeline-parallel-size 4 \
                   --disable-log-requests \
                   --uvicorn-log-level error \
-                  --max-model-len 32768 \
+                  --max-model-len 2048 \
                   --max_num_seqs 1 \
                   --trust-remote-code \
                   --device cuda \
-                  --gpu-memory-utilization 0.95 \
+                  --gpu-memory-utilization 0.8 \
                   --quantization fp8 \
                   --enforce-eager
             resources:
