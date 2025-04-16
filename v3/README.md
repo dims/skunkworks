@@ -33,12 +33,55 @@ helm install lws $HOME/go/src/sigs.k8s.io/lws/charts/lws --create-namespace --na
 kubectl apply -f deepseek-lws.yaml
 ```
 
+- Wait for the pods to be in a running state. You can check the status of the pods with the following command:
+```bash
+kubectl get pods
+NAME       READY   STATUS    RESTARTS   AGE
+vllm-0     1/1     Running   0          7m34s
+vllm-0-1   1/1     Running   0          7m34s
+vllm-0-2   1/1     Running   0          7m34s
+vllm-0-3   1/1     Running   0          7m34s
+```
+
+To watch (follow) the logs in vllm-0, use the following command:
+```bash
+kubectl logs vllm-0 -f
+```
+
+wait till you see the following message:
+```bash
+45986 INFO 04-14 21:43:57 [api_server.py:1081] Starting vLLM API server on http://0.0.0.0:8000
+45987 INFO 04-14 21:43:57 [launcher.py:26] Available routes are:
+45988 INFO 04-14 21:43:57 [launcher.py:34] Route: /openapi.json, Methods: HEAD, GET
+45989 INFO 04-14 21:43:57 [launcher.py:34] Route: /docs, Methods: HEAD, GET
+45990 INFO 04-14 21:43:57 [launcher.py:34] Route: /docs/oauth2-redirect, Methods: HEAD, GET
+45991 INFO 04-14 21:43:57 [launcher.py:34] Route: /redoc, Methods: HEAD, GET
+45992 INFO 04-14 21:43:57 [launcher.py:34] Route: /health, Methods: GET
+45993 INFO 04-14 21:43:57 [launcher.py:34] Route: /load, Methods: GET
+45994 INFO 04-14 21:43:57 [launcher.py:34] Route: /ping, Methods: POST, GET
+45995 INFO 04-14 21:43:57 [launcher.py:34] Route: /tokenize, Methods: POST
+45996 INFO 04-14 21:43:57 [launcher.py:34] Route: /detokenize, Methods: POST
+45997 INFO 04-14 21:43:57 [launcher.py:34] Route: /v1/models, Methods: GET
+45998 INFO 04-14 21:43:57 [launcher.py:34] Route: /version, Methods: GET
+45999 INFO 04-14 21:43:57 [launcher.py:34] Route: /v1/chat/completions, Methods: POST
+46000 INFO 04-14 21:43:57 [launcher.py:34] Route: /v1/completions, Methods: POST
+46001 INFO 04-14 21:43:57 [launcher.py:34] Route: /v1/embeddings, Methods: POST
+46002 INFO 04-14 21:43:57 [launcher.py:34] Route: /pooling, Methods: POST
+46003 INFO 04-14 21:43:57 [launcher.py:34] Route: /score, Methods: POST
+46004 INFO 04-14 21:43:57 [launcher.py:34] Route: /v1/score, Methods: POST
+46005 INFO 04-14 21:43:57 [launcher.py:34] Route: /v1/audio/transcriptions, Methods: POST
+46006 INFO 04-14 21:43:57 [launcher.py:34] Route: /rerank, Methods: POST
+46007 INFO 04-14 21:43:57 [launcher.py:34] Route: /v1/rerank, Methods: POST
+46008 INFO 04-14 21:43:57 [launcher.py:34] Route: /v2/rerank, Methods: POST
+46009 INFO 04-14 21:43:57 [launcher.py:34] Route: /invocations, Methods: POST
+```
+
 - To access the DeepSeek-V3 model using your localhost, use the following command:
 ```bash
 kubectl port-forward svc/vllm-leader 8000:8000 8265:8265
 ```
 
-- To check if the model is registered
+- To check if the model is registered using the openapi spec, use the following command:
 ```bash
 curl -X GET "http://127.0.0.1:8000/v1/models" | jq
 ```
