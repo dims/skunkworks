@@ -103,7 +103,13 @@ time curl -X POST "http://127.0.0.1:8000/v1/chat/completions" \
 
 Links
 =====
-- https://huggingface.co/deepseek-ai/DeepSeek-R1
+- https://huggingface.co/deepseek-ai/DeepSeek-V3
+- https://www.theriseunion.com/en/blog/DeepSeek-V3-R1-671B-GPU-Requirements.html
+- https://blog.mozilla.ai/deploying-deepseek-v3-on-kubernetes/
+- https://github.com/aws-samples/deepseek-using-vllm-on-eks
+- https://community.aws/content/2sJofoAecl6jVdDwVqglbZwKz2E
+- https://docs.vllm.ai/en/latest/serving/distributed_serving.html
+- https://github.com/vllm-project/vllm/issues/11539
 - https://community.aws/content/2sJofoAecl6jVdDwVqglbZwKz2E/hosting-deepseek-r1-on-amazon-eks
 - https://apxml.com/posts/gpu-requirements-deepseek-r1
 - https://unsloth.ai/blog/deepseekr1-dynamic
