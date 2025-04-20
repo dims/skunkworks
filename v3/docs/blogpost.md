@@ -1,5 +1,15 @@
 # Deploying the DeepSeek-V3 Model (full version) in Amazon EKS Using vLLM and LWS
 
+## Table of Contents
+- [Who Is This Guide For?](#who-is-this-guide-for)
+- [Prerequisites](#prerequisites)
+- [Creating a suitable EKS Cluster](#creating-a-suitable-eks-cluster)
+- [A container image with EFA](#a-container-image-with-efa)
+- [Verify the cluster](#verify-the-cluster)
+- [Run the deepseek-v3 workload](#run-the-deepseek-v3-workload)
+- [Take it for a spin!](#take-it-for-a-spin)
+- [Bonus](#bonus)
+
 ## Who Is This Guide For?
 This guide assumes you:
 - Have intermediate Kubernetes experience (kubectl, Helm)
