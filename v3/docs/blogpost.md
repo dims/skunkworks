@@ -21,7 +21,7 @@ This guide provides a streamlined process to deploy the 671B parameter DeepSeek-
 
 The main idea here is to peel the onion to see how exactly folks are deploying these large models with a practical demonstration to understand all the pieces and how they fit together.
 
-Latest versions of the files will be here:
+The latest versions of the files are available here:
 https://github.com/dims/skunkworks/tree/main/v3
 
 ## Prerequisites
@@ -54,7 +54,7 @@ eksdemo create cluster deepseek-v3-cluster-001 \
 ```
 if you want to use [eksctl](https://github.com/eksctl-io/eksctl/) instead, run the same above command with `--dry-run` to get the equivalent command and configuration yaml.
 
-Essentially, have enough GPU nodes, have a large volume size on each node as well as enable EFA. You can use any tool of your choice, but remember you will have to adjust say for taints in the deployment yaml as needed.
+Essentially, ensure you have enough GPU nodes, allocate a large volume size per node, and enable EFA. You can use any tool of your choice, but remember you will have to adjust say for taints in the deployment yaml as needed.
 
 🔍 Why EFA? Elastic Fabric Adapter accelerates inter-node communication, critical for multi-GPU inference.
 
@@ -65,11 +65,11 @@ Ideally you would just use a public image from the vllm folks:
 docker.io/vllm/vllm-openai:latest
 ```
 
-However, we want to use EFA as [Elastic Fabric Adapter (EFA)](https://docs.aws.amazon.com/eks/latest/userguide/node-efa.html) enhances inter-node communication for high-performance computing and machine learning applications within Amazon EKS clusters.
+However, we want to use EFA because [Elastic Fabric Adapter (EFA)](https://docs.aws.amazon.com/eks/latest/userguide/node-efa.html) enhances inter-node communication for high-performance computing and machine learning applications within Amazon EKS clusters.
 
-In the following Dockerfile, we start by grabbing a powerful CUDA base image, then go on a installation spree, pulling in EFA, NCCL, and AWS-OFI-NCCL, while instructing apt to hang onto its downloaded packages. Once everything’s compiled, we carefully graft these freshly built libraries onto the vLLM image above.
+In the following Dockerfile, we start by grabbing a powerful CUDA base image, then go on an installation spree, pulling in EFA, NCCL, and AWS-OFI-NCCL, while instructing apt to hang onto its downloaded packages. Once everything’s compiled, we carefully graft these freshly built libraries onto the vLLM image above.
 
-🛠 GPU Compatibility: The COMPUTE_CAPABILITY_VERSION=90 is specific to L40S GPUs. Adjust this for your hardware.
+🛠 GPU Compatibility: The COMPUTE_CAPABILITY_VERSION=90 setting is specific to L40S GPUs. Adjust this for your hardware.
 
 ```
 # syntax=docker/dockerfile:1
@@ -601,7 +601,7 @@ You will see the model being downloaded:
 (RayWorkerWrapper pid=444, ip=192.168.130.178) Downloading 'model-00120-of-000163.safetensors' to '/local/huggingface/hub/models--deepseek-ai--DeepSeek-V3/blobs/a540ce2f0766c50c12a7af78f41b3f5b6b64ebe8cdc804ee0ff8ff81a90248cc.incomplete'
 ```
 
-If you inspect deepseek-lws.yaml, you will see that `/root/local` directory on the host is used to store the model. So even if the pods fail for some reason, the next pod will pick up downloading from where the previous pod failed.
+If you inspect the deepseek-lws.yaml, you will see that `/root/local` directory on the host is used to store the model. So even if the pods fail for some reason, the next pod will pick up downloading from where the previous pod failed.
 
 After a while you will see the following:
 ```
@@ -707,7 +707,7 @@ Just to be sure, you can clean up using `kubectl delete -f deepseek-lws.yaml` an
 
 ## Bonus
 
-If you were keen observer and noticed that we forwarded port `8265` as well, point your browser to look at the Ray dashboard! 
+If you were a keen observer and noticed that we forwarded port `8265` as well, point your browser to look at the Ray dashboard! 
 
 - http://localhost:8265/#/overview
 - http://localhost:8265/#/cluster
@@ -716,7 +716,7 @@ You can see the GPU usage specifically when you are running an inference.
 
 ## Thanks
 
-A significant portion of this post is based on [Bryant Biggs](bryantbiggs)'s work in various repositories, thanks Bryant. Also thanks to Arush Sharma](https://github.com/rushmash91) for a quick review and suggestions.
+This post is based on [Bryant Biggs](bryantbiggs)'s work in various repositories, thanks Bryant. Also thanks to [Arush Sharma](https://github.com/rushmash91) for a quick review and suggestions. Kudos to the folks in the Ray, vLLM, LWS, and Kubernetes communities for making it easier to compose these complex scenarios.
 
 ## Things to try
 
